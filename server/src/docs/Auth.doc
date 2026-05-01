@@ -1,0 +1,5 @@
+#Auth Routes
+  1. Signup -> /api/auth/signup
+  2. Login -> /api/auth/login
+  3. me -> /api/auth/me
+  4. 
