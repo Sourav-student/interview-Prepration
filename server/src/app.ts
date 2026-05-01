@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+
 import { connDB } from "./utils/connDB";
 import userRouter from "./routers/user.routers";
 import authRouter from "./routers/auth.routers";
@@ -12,19 +13,44 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Rate limiting
-if (process.env.NODE_ENV === "production") {
-  app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100
-  }));
-}
+app.use((req, res, next) => {
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    process.env.CLIENT_URL as string
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
 
-app.use(cors({
-  origin: process.env.CLIENT_URL,
-  methods: ["POST", "GET", "DELETE", "PATCH", "PUT"],
-  credentials: true
-}));
+  // Handle preflight request
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+    })
+  );
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,34 +60,27 @@ app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 
 app.get("/", (req, res) => {
-  console.log("This is the server");
-  return res.send("Hello World")
-})
+  return res.send("Server is running");
+});
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error("ERROR:", err.stack);
   res.status(500).json({
-    message: "Internal Server Error"
+    message: "Internal Server Error",
   });
 });
 
-// app.listen(PORT, () => {
-//   console.log(`App running at port ${PORT}`);
-// });
-
-// Start server
 async function startServer() {
   try {
     await connDB();
 
     const server = app.listen(PORT, () => {
-      console.log(`App running at port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
 
     process.on("SIGINT", () => {
       server.close(() => process.exit(0));
     });
-
   } catch (error) {
     console.error("Startup failed:", error);
     process.exit(1);
