@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import Feedback from "../models/feedback.models";
-import Summary from "../models/summary.models";
+import Feedback from "../models/feedback.models.js";
+import Summary from "../models/summary.models.js";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 

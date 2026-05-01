@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-import { connDB } from "./utils/connDB";
-import userRouter from "./routers/user.routers";
-import authRouter from "./routers/auth.routers";
+import { connDB } from "./utils/connDB.js";
+import userRouter from "./routers/user.routers.js";
+import authRouter from "./routers/auth.routers.js";
 
 dotenv.config();
 

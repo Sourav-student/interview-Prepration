@@ -1,13 +1,13 @@
 import { Response, Request } from "express";
-import { connGemini } from "../utils/connGemini";
-import Feedback from "../models/feedback.models";
-import User from "../models/user.models";
-import { updateSummary } from "../utils/updateSummary";
-import Summary from "../models/summary.models";
-import { buildFeedbackData } from "../utils/feedbackbuilder";
-import { saveFeedback } from "../services/feedback.service";
-import { updateUserStreak } from "../services/streak.services";
-import { buildInterviewPrompt } from "../utils/promptBuilder";
+import { connGemini } from "../utils/connGemini.js";
+import Feedback from "../models/feedback.models.js";
+import User from "../models/user.models.js";
+import { updateSummary } from "../utils/updateSummary.js";
+import Summary from "../models/summary.models.js";
+import { buildFeedbackData } from "../utils/feedbackbuilder.js";
+import { saveFeedback } from "../services/feedback.service.js";
+import { updateUserStreak } from "../services/streak.services.js";
+import { buildInterviewPrompt } from "../utils/promptBuilder.js";
 
 const sessionStore: Record<string, { history: Array<{ question?: string; score?: number; suggestion?: string; answer?: string }>; questionCount: number }> = {};
 

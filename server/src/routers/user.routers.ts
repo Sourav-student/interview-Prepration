@@ -1,6 +1,6 @@
 import express from "express";
-import { getFeedbacks, takeInterview, getAllFeedbacks, generateQuestion } from "../controllers/user.controllers";
-import { isAuthenticated } from "../middlewares/auth.middlewares";
+import { getFeedbacks, takeInterview, getAllFeedbacks, generateQuestion } from "../controllers/user.controllers.js";
+import { isAuthenticated } from "../middlewares/auth.middlewares.js";
 
 const userRouter = express.Router();
 
