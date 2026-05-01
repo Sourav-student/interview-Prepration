@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import { connDB } from "./utils/connDB.js";
 import userRouter from "./routers/user.routers.js";
 import authRouter from "./routers/auth.routers.js";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 dotenv.config();
 
