@@ -67,7 +67,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Link href="/practice" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-center rounded-xl font-semibold transition">
+          <Link href="/problems" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-center rounded-xl font-semibold transition">
             Get Started
           </Link>
 
