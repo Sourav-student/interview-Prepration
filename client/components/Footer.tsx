@@ -20,17 +20,17 @@ const QUICK_LINKS: FooterLink[] = [
 ];
 
 const SUPPORT_LINKS: FooterLink[] = [
-  { name: "Help & FAQs", href: "/help" },
-  { name: "Contact Us", href: "/contactus" },
-  { name: "Platform Status", href: "/platform-status" },
-  { name: "Resources", href: "/resources" },
+  { name: "Help & FAQs", href: "/" },
+  { name: "Contact Us", href: "/" },
+  { name: "Platform Status", href: "/" },
+  { name: "Resources", href: "/" },
 ];
 
 const COMPANY_LINKS: FooterLink[] = [
-  { name: "Blogs", href: "/blogs" },
-  { name: "Policies", href: "/policy" },
+  { name: "Blogs", href: "/" },
+  { name: "Policies", href: "/" },
   { name: "About Us", href: "/aboutus" },
-  { name: "Careers", href: "/careers" },
+  { name: "Careers", href: "/" },
 ];
 
 // 3. Define Framer Motion Variants
@@ -39,7 +39,7 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15, // Delay between each column animating in
+      staggerChildren: 0.15, 
       delayChildren: 0.2,
     },
   },
