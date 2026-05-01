@@ -20,11 +20,17 @@ if (process.env.NODE_ENV === "production") {
   }));
 }
 
-app.use(cors({
+const corsOptions = {
   origin: process.env.CLIENT_URL,
-  methods: ["POST", "GET", "DELETE", "PATCH", "PUT"],
-  credentials: true
-}));
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
+// IMPORTANT: handle preflight explicitly
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
