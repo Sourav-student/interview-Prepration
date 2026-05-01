@@ -1,11 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { connDB } from "./utils/connDB.js";
 import userRouter from "./routers/user.routers.js";
 import authRouter from "./routers/auth.routers.js";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -13,11 +13,13 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+
 if (process.env.NODE_ENV === "production") {
-  app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100
-  }));
+  app.use(limiter);
 }
 
 console.log("CLIENT_URL:", process.env.CLIENT_URL);
