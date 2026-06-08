@@ -2,14 +2,12 @@ export function buildInterviewPrompt({
   domain,
   interview_level,
   summary,
-  history,
-  isFeedbackStep,
+  history
 }: {
   domain: string;
   interview_level: string;
   summary: string;
   history: any[];
-  isFeedbackStep: boolean;
 }) {
   return `
 You are a professional interviewer.
@@ -28,19 +26,9 @@ Rules:
 
 Previous:
 ${history
-  .map((q, i) => `Q${i + 1}: ${q.question}\nA: ${q.answer || ""}`)
-  .join("\n")}
-
-${
-  !isFeedbackStep
-    ? `{
-  "question": "string",
-  "score": number,
-  "suggestion": "string"
-}`
-    : `{
-  "feedback": "string"
-}`
-}
+      .map((q, i) => `Q${i + 1}: ${q.question}\nA: ${q.answer || ""}`)
+      .join("\n")}
+  As you see all the previous performance of the user and overall summary about the user now provide a question according to the given data.
 `;
+
 }

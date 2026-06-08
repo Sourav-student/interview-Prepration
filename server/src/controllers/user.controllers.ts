@@ -8,69 +8,115 @@ import { buildFeedbackData } from "../utils/feedbackbuilder.js";
 import { saveFeedback } from "../services/feedback.service.js";
 import { updateUserStreak } from "../services/streak.services.js";
 import { buildInterviewPrompt } from "../utils/promptBuilder.js";
+import { getError } from "../utils/getError.js";
+import { getSuccess } from "../utils/getSuccess.js";
+import InterviewSession, { IHistory } from "../models/interviewSession.models.js";
+import { connGroq } from "../utils/connGroq.js";
 
-const sessionStore: Record<string, { history: Array<{ question?: string; score?: number; suggestion?: string; answer?: string }>; questionCount: number }> = {};
 
-export async function takeInterview(req: Request, res: Response) {
+export async function createInterviewSession(req: Request, res: Response) {
   try {
-    const { domain, interview_level, answer, sessionId } = req.body;
+    const { domain, interview_level, sessionId } = req.body;
     const user_id = (req as any).user.id;
 
-    // 1. INIT SESSION
-    if (!sessionStore[sessionId]) {
-      sessionStore[sessionId] = {
-        history: [],
-        questionCount: 0,
-      };
+    if (!domain || !interview_level) {
+      return getError(res, "fill the required fields", 404);
     }
 
-    const session = sessionStore[sessionId];
-
-    // 2. ATTACH ANSWER
-    if (answer && session.history.length > 0) {
-      session.history[session.history.length - 1].answer = answer;
+    if (!user_id || !sessionId) {
+      return getError(res, "there is currently no session available", 401);
     }
 
-    // 3. GET SUMMARY
-    const summaryDoc = await Summary.findOne({ user_id });
-    const summary = summaryDoc?.summary || "";
+    const session = await InterviewSession.create({
+      user_id, domain, interview_level, sessionId
+    })
 
-    // 4. DETERMINE STEP
-    const isFeedbackStep = session.questionCount >= 3;
+    if (!session) {
+      return getError(res, "there is currently no session available", 422);
+    }
 
-    // 5. BUILD PROMPT
-    const prompt = buildInterviewPrompt({
-      domain,
-      interview_level,
-      summary,
-      history: session.history,
-      isFeedbackStep,
+    return res.status(201).json({
+      message: "session create successfully",
+      success: true,
+      status: 201,
+      data: session
     });
+  } catch (error) {
+    return getError(res, "something went wrong", 500);
+  }
+}
 
-    // 6. CALL AI
-    const parsed = await connGemini(prompt);
+export async function reviewInterviewQuestion(req: Request, res: Response) {
+  try {
+    const { answer, question } = req.body;
+    const user_id = (req as any).user.id;
+    const { sessionId } = req.params;
 
-    // 7. UPDATE SESSION
-    if (parsed.question && session.history.length < 3) {
-      session.history.push({
-        question: parsed.question,
-        score: parsed.score,
-        suggestion: parsed.suggestion,
-      });
-
-      session.questionCount++;
+    if (!sessionId) {
+      return getError(res, "session is not created", 400);
     }
+
+    const session = await InterviewSession.findOne({ user_id, sessionId });
+    if (!session) {
+      return getError(res, "session not found", 404);
+    }
+
+    const prompt = `You are a senior FAANG interviewer evaluating candidate responses.
+
+Analyze the interview question and candidate answer carefully.
+
+Return a score between 0 and 10 based on:
+- Correctness
+- Completeness
+- Communication quality
+- Technical depth
+- Relevance to the question
+
+Rules:
+- Score must be an integer only.
+- Suggestion must be at most 50 words.
+- If the answer is nearly perfect, return "BEST ANSWER".
+- Never return null.
+- Never return markdown.
+- Never return text outside the JSON object.
+
+Output Format:
+
+{
+  "score": 8,
+  "suggestion": "Mention React's virtual DOM reconciliation process for a more complete answer."
+}
+
+Question:
+${question}
+
+Answer:
+${answer}`;
+
+    const parsed = await connGroq(prompt);
+
+    session.history.push({
+      question,
+      answer,
+      score: parsed.score,
+      suggestion: parsed.suggestion
+    })
+
+    session.questionCount++;
+
+    await session.save({ validateBeforeSave: false });
 
     const questionCount = session.questionCount;
+     
+    const isFinished = questionCount >= 7;
 
-    // 8. INTERVIEW COMPLETED
-    if (questionCount === 4 || isFeedbackStep) {
+    if (questionCount === 7 || isFinished) {
       const { filteredData, avg_score } = buildFeedbackData(session.history);
 
       await saveFeedback({
         feedback: parsed.feedback || "No feedback",
-        domain,
-        level: interview_level,
+        domain: session.domain,
+        level: session.interview_level,
         avg_score,
         filteredData,
         user_id,
@@ -86,15 +132,12 @@ export async function takeInterview(req: Request, res: Response) {
 
       await updateUserStreak(user);
       await updateSummary(user_id);
-
-      // OPTIONAL: clear session
-      delete sessionStore[sessionId];
     }
 
     return res.status(200).json({
       message: "Success",
       data: {
-        response: parsed,
+        response: session.history,
         questionCount,
         isFinished: questionCount >= 3,
       },
@@ -103,65 +146,79 @@ export async function takeInterview(req: Request, res: Response) {
 
   } catch (error) {
     console.error("Error in takeInterview:", error);
-    return res.status(500).json({
-      message: "Something went wrong!",
-      success: false,
-    });
+    return getError(res, "something went wrong", 500);
   }
 }
+
+export async function getInterviewQuestion(req: Request, res: Response) {
+  try {
+    const user_id = (req as any).user.id;
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return getError(res, "session is not created", 400);
+    }
+
+    const session = await InterviewSession.findOne({ user_id, sessionId });
+    if (!session) {
+      return getError(res, "session not found", 404);
+    }
+
+    const domain = session.domain;
+    const interview_level = session.interview_level;
+    const summary = (await Summary.findOne({ user_id }))?.summary || "";
+    const history = (session.history || []) as IHistory[];
+
+    const prompt = buildInterviewPrompt({
+      domain,
+      interview_level,
+      summary,
+      history
+    });
+
+    const parsed = await connGroq(prompt);
+    return res.status(201).json({
+      message: "Success",
+      question: parsed,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in takeInterview:", error);
+    return getError(res, "something went wrong", 500);
+  }
+}
+
 
 export async function getFeedbacks(req: Request, res: Response) {
   try {
     const user_id = (req as any).user.id;
     const { len } = req.params;
-    // console.log(len);
 
     const feedbacks = await Feedback.find({ user_id }).sort({ createdAt: -1 }).limit(Number(len));
-    return res.status(200).json({
-      success: true,
-      message: "all feedbacks are loaded",
-      feedbacks
-    })
+    return getSuccess(res, "fetch data successfully", 200, feedbacks);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "something went wrong!"
-    })
+    return getError(res, "something went wrong", 500);
   }
 }
 
 export async function getAllFeedbacks(req: Request, res: Response) {
   try {
     const user_id = (req as any).user.id;
-
     const feedbacks = await Feedback.find({ user_id }).sort({ createdAt: -1 });
 
-    return res.status(200).json({
-      success: true,
-      message: "all feedbacks are loaded",
-      feedbacks
-    })
+    return getSuccess(res, "fetch successfully", 200, feedbacks)
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "something went wrong!"
-    })
+    return getError(res, "something went wrong", 500)
   }
 }
 
 export async function generateQuestion(req: Request, res: Response) {
   try {
-    const user_id = (req as any).user.id;
     const { topic, difficulty, sessionId } = req.body;
 
     // 1. Basic validation
     if (!topic || !difficulty) {
-      return res.status(400).json({
-        success: false,
-        message: "Topic and difficulty are required",
-      });
+      return getError(res, "Topic and difficulty are required", 400);
     }
 
     // 2. Prompt
@@ -194,25 +251,12 @@ Return STRICT JSON ONLY:
 
     // 4. Validate response
     if (!Array.isArray(parsed)) {
-      return res.status(500).json({
-        success: false,
-        message: "Invalid AI response format",
-        raw: parsed,
-      });
+      return getError(res, "Invalid AI response format", 404);
     }
 
     // 5. Response
-    return res.status(200).json({
-      success: true,
-      message: "Questions generated successfully",
-      data: parsed,
-    });
-
+    return getSuccess(res, "Questions generated successfully", 201, parsed);
   } catch (error) {
-    console.error("Error in generateQuestion:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong!",
-    });
+    return getError(res, "something went wrong", 500);
   }
 }

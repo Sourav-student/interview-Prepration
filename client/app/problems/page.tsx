@@ -104,7 +104,7 @@ const Problems: React.FC = () => {
         {/* Form */}
         <form
           onSubmit={handleGenerate}
-          className="bg-gray-900 p-6 rounded-xl flex gap-4"
+          className="bg-gray-900 p-6 rounded-xl flex gap-4 flex-wrap"
         >
           <input
             value={topic}
@@ -125,7 +125,7 @@ const Problems: React.FC = () => {
 
           <button
             disabled={isGenerating}
-            className="px-6 bg-blue-600 text-white rounded"
+            className="px-6 py-3 cursor-pointer bg-blue-600 text-white rounded"
           >
             {isGenerating ? "Generating..." : "Generate"}
           </button>

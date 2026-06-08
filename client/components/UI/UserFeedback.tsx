@@ -47,8 +47,8 @@ const UserFeedback = () => {
   const getAllFeedbacks = async () => {
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/feedbacks/2`, { withCredentials: true });
-      console.log(res.data.feedbacks);
-      setAllFeedbacks(res.data.feedbacks);
+      // console.log(res.data.data);
+      setAllFeedbacks(res.data.data);
     } catch (error) {
       if (isAxiosError(error)) {
         console.log(error?.response?.data?.message)

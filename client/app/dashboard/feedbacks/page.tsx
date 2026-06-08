@@ -45,7 +45,7 @@ const Feedbacks = () => {
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/feedbacks/all`, { withCredentials: true });
       // console.log(res.data.feedbacks);
-      const data = res.data.feedbacks;
+      const data = res.data.data;
       const filterData = data.filter((item: Feedback) =>
         item.user_res_data && item.user_res_data.length > 0
       );

@@ -22,7 +22,6 @@ if (process.env.NODE_ENV === "production") {
   app.use(limiter);
 }
 
-console.log("CLIENT_URL:", process.env.CLIENT_URL);
 
 app.use(cors({
   origin: process.env.CLIENT_URL,
@@ -37,13 +36,11 @@ app.use(cookieParser());
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 
-app.get("/", (req, res) => {
-  console.log("This is the server");
-  return res.send("Hello World")
+app.get("/api/health", (req, res) => {
+  return res.send("server is working...");
 })
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
   res.status(500).json({
     message: "Internal Server Error"
   });
