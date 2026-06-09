@@ -70,10 +70,10 @@ const Interview: React.FC = () => {
       );
 
       const data = res.data;
-      toast.success(data.message);
       router.push(`/interview/${sessionId}`);
+      toast.success(data.message);
     } catch (err) {
-      if(isAxiosError(err)){
+      if (isAxiosError(err)) {
         toast.error(err?.response?.data.message);
       }
     } finally {

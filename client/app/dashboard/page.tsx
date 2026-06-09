@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
@@ -25,6 +25,13 @@ const itemVariants: Variants = {
 const Dashboard: React.FC = () => {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+
+  const [nav_links] = useState([
+     {name: "Planner", href: "/study-planner"} ,
+     {name: "Roadmap", href: "/placement-roadmap"},
+     {name: "Weakness", href: "/weakness-detection"},
+     {name: "Problems", href: "/problems"},
+  ]);
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -60,13 +67,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pt-18 pb-12 px-4 sm:px-6">
-      <div className="flex justify-end">
-        <button
-          className="border border-white rounded-lg px-4 py-2 hover:bg-blue-950 cursor-pointer"
-          onClick={async () => await logout()}>
-          Logout
-        </button>
-      </div>
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -81,24 +81,22 @@ const Dashboard: React.FC = () => {
             </h1>
             <p className="text-gray-400 mt-1">Ready to crush your next interview?</p>
           </div>
-          <Link href="/problems">
-            <button className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black">
-              Start Practicing
-            </button>
-          </Link>
+          <button
+            className="border border-white rounded-lg px-4 py-2 hover:bg-blue-950 cursor-pointer"
+            onClick={async () => await logout()}>
+            Logout
+          </button>
         </motion.div>
 
-        {/* Stats Grid */}
-        <StatsGrid {...user} />
+        <motion.div variants={itemVariants} className="flex gap-2 flex-wrap justify-around items-center border rounded-xl py-4 px-6 border-zinc-800 bg-zinc-950">
+            {
+              nav_links.map((link, index) => (
+                <Link href={link.href} key={index} className="py-2 px-4 font-medium hover:bg-zinc-800 rounded-xl text-xl bg-black border border-zinc-900">{link.name}</Link>
+              ))
+            }
+        </motion.div>
       </motion.div>
-      <UserFeedback />
-      <div className="flex justify-end">
-        <button
-          className="border mt-3 border-white rounded-lg px-4 py-2 hover:bg-blue-950 cursor-pointer"
-          onClick={async () => router.push('/dashboard/feedbacks')}>
-          View Feedbacks
-        </button>
-      </div>
+      <StatsGrid {...user} />
     </div>
   );
 };

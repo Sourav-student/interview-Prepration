@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Interview", href: "/interview" },
   { name: "Problems", href: "/problems" },
+  { name: "Predict", href: "/placement-predict" },
 ];
 
 const Header = () => {

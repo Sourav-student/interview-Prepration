@@ -44,9 +44,6 @@ ${formattedFeedback}
       { summary: rawText },
       { upsert: true, new: true }
     );
-
-    // console.log("Summary updated successfully");
-
   } catch (error) {
     // console.error("Error updating summary:", error);
   }

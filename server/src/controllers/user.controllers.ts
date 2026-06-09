@@ -13,7 +13,6 @@ import { getSuccess } from "../utils/getSuccess.js";
 import InterviewSession, { IHistory } from "../models/interviewSession.models.js";
 import { connGroq } from "../utils/connGroq.js";
 
-
 export async function createInterviewSession(req: Request, res: Response) {
   try {
     const { domain, interview_level, sessionId } = req.body;
@@ -48,7 +47,7 @@ export async function createInterviewSession(req: Request, res: Response) {
 
 export async function reviewInterviewQuestion(req: Request, res: Response) {
   try {
-    const { answer, question } = req.body;
+    const { answer, question, endInterview } = req.body;
     const user_id = (req as any).user.id;
     const { sessionId } = req.params;
 
@@ -61,7 +60,7 @@ export async function reviewInterviewQuestion(req: Request, res: Response) {
       return getError(res, "session not found", 404);
     }
 
-    const prompt = `You are a senior FAANG interviewer evaluating candidate responses.
+    const prompt = `You are a senior interviewer evaluating candidate responses.
 
 Analyze the interview question and candidate answer carefully.
 
@@ -71,6 +70,7 @@ Return a score between 0 and 10 based on:
 - Communication quality
 - Technical depth
 - Relevance to the question
+- Give score good if answer is soon relevent not try to get best answer
 
 Rules:
 - Score must be an integer only.
@@ -92,7 +92,6 @@ ${question}
 
 Answer:
 ${answer}`;
-
     const parsed = await connGroq(prompt);
 
     session.history.push({
@@ -103,17 +102,13 @@ ${answer}`;
     })
 
     session.questionCount++;
-
     await session.save({ validateBeforeSave: false });
-
     const questionCount = session.questionCount;
-     
     const isFinished = questionCount >= 7;
 
-    if (questionCount === 7 || isFinished) {
+    if (isFinished || endInterview) {
       const { filteredData, avg_score } = buildFeedbackData(session.history);
-
-      await saveFeedback({
+      const feedback = await saveFeedback({
         feedback: parsed.feedback || "No feedback",
         domain: session.domain,
         level: session.interview_level,
@@ -132,6 +127,13 @@ ${answer}`;
 
       await updateUserStreak(user);
       await updateSummary(user_id);
+
+      await InterviewSession.findOneAndDelete({ user_id, sessionId })
+
+      return res.status(200).json({  
+        isFinished: true,
+        feedback : feedback
+      });
     }
 
     return res.status(200).json({
@@ -139,7 +141,7 @@ ${answer}`;
       data: {
         response: session.history,
         questionCount,
-        isFinished: questionCount >= 3,
+        isFinished: false
       },
       success: true,
     });
