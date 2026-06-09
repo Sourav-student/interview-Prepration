@@ -3,13 +3,14 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import joblib
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = FastAPI()
 
-origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+# Frontend URLs
+origins = [
+    "http://localhost:3000",
+    "https://interview-preparation-beta.vercel.app",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load model
 model = joblib.load("placement_model.pkl")
+
 
 class Student(BaseModel):
     cgpa: float
@@ -31,9 +34,16 @@ class Student(BaseModel):
     extracurricular: int
     placement_training: int
 
+
 @app.get("/")
 def home():
     return {"message": "Placement Prediction API Running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 
 @app.post("/predict")
 def predict(student: Student):
