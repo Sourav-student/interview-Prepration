@@ -10,8 +10,9 @@ import { updateUserStreak } from "../services/streak.services.js";
 import { buildInterviewPrompt } from "../utils/promptBuilder.js";
 import { getError } from "../utils/getError.js";
 import { getSuccess } from "../utils/getSuccess.js";
-import InterviewSession, { IHistory } from "../models/interviewSession.models.js";
+import { IHistory, IInterviewSession } from "../types/models_type.js";
 import { connGroq } from "../utils/connGroq.js";
+import InterviewSession from "../models/interviewSession.models.js";
 
 export async function createInterviewSession(req: Request, res: Response) {
   try {
