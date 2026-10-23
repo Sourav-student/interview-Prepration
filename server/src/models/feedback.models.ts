@@ -1,20 +1,5 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-interface userDataType {
-  question: string;
-  answer: string;
-  improved_answer?: string;
-  score: number,
-}
-
-interface feedbackType extends Document {
-  feedback: string;
-  domain: string;
-  level: string;
-  avg_score: number;
-  user_res_data: userDataType[];
-  user_id: mongoose.Schema.Types.ObjectId;
-}
+import mongoose, { Schema } from "mongoose";
+import { feedbackType, userDataType } from "../types/models_type.js";
 
 const userResDataSchema = new Schema<userDataType>({
   question: { type: String, required: true },

@@ -29,8 +29,9 @@ const Dashboard: React.FC = () => {
   const [nav_links] = useState([
      {name: "Planner", href: "/study-planner"} ,
      {name: "Roadmap", href: "/placement-roadmap"},
-     {name: "Weakness", href: "/weakness-detection"},
+     {name: "Weakness insights", href: "/weekness-detection"},
      {name: "Problems", href: "/problems"},
+     {name: "DSA sheets", href: "/dsa-sheets"},
   ]);
 
   // Redirect unauthenticated users

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios, { isAxiosError } from 'axios';
@@ -8,12 +8,22 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
 import { CheckCircle, RotateCcw, BarChart3 } from "lucide-react";
 
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
 export default function InterviewScreen() {
   const router = useRouter();
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [cameraError, setCameraError] = useState<string>('');
@@ -21,32 +31,49 @@ export default function InterviewScreen() {
   const [cameraEnabled, setCameraEnabled] = useState<boolean>(true);
   const [isQuestionTime, setIsQuestionTime] = useState<boolean>(true);
   const [answer, setAnswer] = useState<string>("")
-  const [question, setQuestion] = useState();
+  const [question, setQuestion] = useState<string>();
+  const [questionError, setQuestionError] = useState<string>("");
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ avg_score: number }>();
   const [endInterview, setEndInterview] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
   // GET CALL FOR INTERVIEW START
-  const getQuestion = async () => {
+  const getQuestion = useCallback(async () => {
+    if (!slug) {
+      setQuestionError("This interview link is missing its session ID.");
+      setIsQuestionTime(false);
+      return;
+    }
+
     setIsLoading(true);
+    setQuestionError("");
     try {
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/interview/${slug}`, { withCredentials: true });
-      setQuestion(res.data.question.question);
+      const nextQuestion = res.data?.question?.question;
+      if (!nextQuestion) {
+        throw new Error("The interview service did not return a question. Please try again.");
+      }
+      setQuestion(nextQuestion);
     } catch (error) {
-      if (isAxiosError(error)) toast.error(error?.response?.data.message);
-      router.push('/interview');
+      const message = isAxiosError(error)
+        ? error.response?.data?.message || "Could not load your first question. Please try again."
+        : error instanceof Error
+          ? error.message
+          : "Could not load your first question. Please try again.";
+      setQuestionError(message);
+      toast.error(message);
     } finally {
       setIsQuestionTime(false);
       setIsLoading(false);
     }
-  }
+  }, [slug]);
 
   useEffect(() => {
     if (isQuestionTime) {
       getQuestion();
     }
-  }, [isQuestionTime])
+  }, [getQuestion, isQuestionTime])
 
   useEffect(() => {
     initializeMedia();
@@ -89,9 +116,11 @@ export default function InterviewScreen() {
   };
 
   const initializeSpeechRecognition = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+    const speechWindow = window as Window & {
+      SpeechRecognition?: new () => SpeechRecognitionLike;
+      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+    };
+    const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       toast.error("Speech Recognition not supported");
@@ -104,7 +133,7 @@ export default function InterviewScreen() {
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       let transcript = "";
 
       for (
@@ -118,7 +147,7 @@ export default function InterviewScreen() {
       setAnswer(transcript);
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event) => {
       console.error(event.error);
     };
 
@@ -204,7 +233,7 @@ export default function InterviewScreen() {
   };
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="min-h-screen bg-zinc-950 text-white pt-5">
       {isFinished ?
         <div className="flex items-center justify-center min-h-100 mt-15 mb-4">
           <motion.div
@@ -421,8 +450,19 @@ export default function InterviewScreen() {
                 </div>
 
                 <p className="text-lg leading-8">
-                  {question}
+                  {isLoading ? "Preparing your first question…" : questionError ? (
+                    <span className="text-amber-300">{questionError}</span>
+                  ) : question}
                 </p>
+                {questionError && !isLoading && (
+                  <button
+                    type="button"
+                    onClick={() => setIsQuestionTime(true)}
+                    className="mt-4 rounded-xl border border-zinc-700 px-4 py-2 text-sm font-medium text-white transition hover:border-blue-500 hover:bg-blue-500/10"
+                  >
+                    Retry loading question
+                  </button>
+                )}
               </article>
 
               {/* Answer */}
@@ -449,7 +489,7 @@ export default function InterviewScreen() {
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={handleSubmit}
-                    disabled={isLoading}
+                    disabled={isLoading || !!questionError || !question}
                     className=" rounded-2xl bg-blue-600 px-4 py-2 font-medium transition hover:bg-blue-700 cursor-pointer"
                   >
                     Submit Answer

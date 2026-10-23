@@ -1,11 +1,30 @@
-import React from 'react'
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { AlertCircle, ArrowRight, BrainCircuit, CheckCircle2, RefreshCw, Sparkles, Target } from "lucide-react";
 
-const WeeknessDetection = () => {
-  return (
-    <div className='min-h-screen'>
-      
-    </div>
-  )
+type QA = { question?: string; score?: number; improved_answer?: string };
+type Feedback = { _id: string; domain?: string; level?: string; avg_score?: number; user_res_data?: QA[]; createdAt?: string };
+
+export default function WeaknessDetection() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const load = async () => { setLoading(true); setError(""); try { const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/feedbacks/all`, { withCredentials: true }); setFeedbacks((res.data.data || []).filter((item: Feedback) => item.user_res_data?.length)); } catch (e) { setError(axios.isAxiosError(e) ? e.response?.data?.message || "Couldn’t load your interview feedback." : "Couldn’t load your interview feedback."); } finally { setLoading(false); } };
+  useEffect(() => { void load(); }, []);
+  const insights = useMemo(() => {
+    const questions = feedbacks.flatMap((f) => (f.user_res_data || []).map((q) => ({ ...q, domain: f.domain || "Interview", level: f.level || "Practice" })));
+    const low = questions.filter((q) => typeof q.score === "number" && q.score <= 5).sort((a, b) => (a.score || 0) - (b.score || 0));
+    const grouped = new Map<string, number>();
+    for (const q of low) grouped.set(q.domain, (grouped.get(q.domain) || 0) + 1);
+    return { low, domains: [...grouped.entries()].sort((a, b) => b[1] - a[1]) };
+  }, [feedbacks]);
+  return <main className="page-shell px-5 pb-20 sm:px-8"><div className="mx-auto max-w-6xl pt-10"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Reflection that helps you grow</p><h1 className="mt-3 text-4xl font-semibold tracking-[-.05em] text-white sm:text-5xl">Find your next <span className="text-gradient">growth area.</span></h1><p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">Review your interview feedback and spot the topics worth a little more practice.</p></div><button onClick={() => void load()} disabled={loading} className="secondary-button"><RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh insights</button></div>
+    {loading ? <div className="mt-9 grid gap-4 md:grid-cols-3">{[1,2,3].map((n) => <div key={n} className="surface h-40 animate-pulse rounded-2xl" />)}</div> : error ? <div className="surface mt-9 rounded-2xl p-6"><p className="flex items-center gap-2 text-sm text-rose-200"><AlertCircle size={17} />{error}</p><button onClick={() => void load()} className="mt-4 text-sm font-semibold text-[#b7f36b]">Try again</button></div> : feedbacks.length === 0 ? <div className="surface mt-9 rounded-[26px] px-6 py-14 text-center"><span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-300/10 text-violet-200"><BrainCircuit size={24} /></span><h2 className="mt-5 text-xl font-semibold text-white">Your first insight is one session away.</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Complete a mock interview to receive detailed feedback and discover what to focus on next.</p><Link href="/interview" className="primary-button mt-6">Start a mock interview <ArrowRight size={15} /></Link></div> : <>
+      <div className="mt-9 grid gap-4 sm:grid-cols-3"><div className="surface rounded-2xl p-5"><p className="text-xs text-slate-500">SESSIONS REVIEWED</p><p className="mt-3 text-3xl font-semibold text-white">{feedbacks.length}</p><p className="mt-1 text-xs text-slate-600">Your completed mock interviews</p></div><div className="surface rounded-2xl p-5"><p className="text-xs text-slate-500">ANSWERS TO REVISIT</p><p className="mt-3 text-3xl font-semibold text-amber-200">{insights.low.length}</p><p className="mt-1 text-xs text-slate-600">Scores of 5 or below</p></div><div className="surface rounded-2xl p-5"><p className="text-xs text-slate-500">A GOOD NEXT STEP</p><p className="mt-3 text-lg font-semibold text-[#b7f36b]">{insights.domains[0]?.[0] || "Keep practicing"}</p><p className="mt-1 text-xs text-slate-600">{insights.domains[0] ? "Most room to grow in your feedback" : "Build on your steady progress"}</p></div></div>
+      <section className="surface mt-5 rounded-[26px] p-5 sm:p-7"><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[#b7f36b]/10 text-[#b7f36b]"><Target size={19} /></span><div><h2 className="font-semibold text-white">Topics to revisit</h2><p className="mt-1 text-xs text-slate-500">A gentle nudge toward your next useful practice session.</p></div></div>{insights.domains.length ? <div className="mt-5 space-y-3">{insights.domains.map(([domain, count], i) => <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }} key={domain} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[.06] bg-white/[.02] p-4"><span className="flex items-center gap-3 text-sm font-medium text-slate-200"><span className="grid h-8 w-8 place-items-center rounded-lg bg-violet-300/10 text-violet-200"><Sparkles size={15} /></span>{domain}</span><span className="text-xs text-slate-500">{count} answer{count === 1 ? "" : "s"} to revisit</span></motion.div>)}</div> : <div className="mt-5 flex items-center gap-3 rounded-xl border border-[#b7f36b]/10 bg-[#b7f36b]/[.04] p-4 text-sm text-slate-300"><CheckCircle2 size={18} className="text-[#b7f36b]" />No low-scoring answers yet. Keep practicing and reviewing your feedback.</div>}</section>
+      {insights.low.length > 0 && <section className="mt-5 rounded-[26px] border border-white/[.07] bg-white/[.02] p-5 sm:p-7"><h2 className="font-semibold text-white">A few answers worth another look</h2><div className="mt-4 space-y-3">{insights.low.slice(0, 4).map((item, i) => <article key={`${item.question}-${i}`} className="rounded-xl border border-white/[.06] bg-[#0b1016]/70 p-4"><div className="flex items-start justify-between gap-4"><p className="text-sm leading-6 text-slate-300">{item.question || "Interview response"}</p><span className="shrink-0 rounded-full bg-amber-300/10 px-2.5 py-1 text-xs font-semibold text-amber-200">{item.score ?? "—"} / 10</span></div>{item.improved_answer && <p className="mt-3 border-l border-[#b7f36b]/30 pl-3 text-xs leading-5 text-slate-500">Try this angle: {item.improved_answer}</p>}</article>)}</div><Link href="/dashboard/feedbacks" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#b7f36b]">Review all feedback <ArrowRight size={15} /></Link></section>}
+    </>}</div></main>;
 }
-
-export default WeeknessDetection;

@@ -1,16 +1,5 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-interface userType extends Document {
-  username: string;
-  name: string;
-  email: string;
-  phone_no: string;
-  streak: number;
-  streak_data: Date | null;
-  password: string;
-  problems_solved: number;
-  mock_interviews: number;
-}
+import mongoose, { Schema } from "mongoose";
+import { userType } from "../types/models_type.js";
 
 const userSchema = new Schema<userType>(
   {

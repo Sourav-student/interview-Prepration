@@ -1,24 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IHistory {
-  question?: string;
-  answer?: string;
-  score?: number;
-  suggestion?: string;
-}
-
-export interface IInterviewSession extends Document {
-  user_id: mongoose.Types.ObjectId;
-  sessionId: string;
-  domain: string;
-  interview_level: string;
-  questionCount: number;
-  history: IHistory[];
-  completed: boolean;
-  expiresAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from "mongoose";
+import { IInterviewSession } from "../types/models_type.js";
 
 const InterviewSessionSchema = new Schema<IInterviewSession>(
   {

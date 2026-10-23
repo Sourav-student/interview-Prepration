@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkillSpring frontend
 
-## Getting Started
+The SkillSpring frontend is a responsive web app for learning, interview practice, DSA problem solving, placement preparation, and progress review. It is built with Next.js App Router, React, TypeScript, Tailwind CSS, Framer Motion, and Axios.
 
-First, run the development server:
+## Features and pages
+
+| Route | What it does |
+| --- | --- |
+| `/` | Introduces the platform and links to its learning tools. |
+| `/signup`, `/login` | Creates an account and signs in through the API. |
+| `/dashboard` | Shows the signed-in user’s profile, activity stats, and shortcuts. |
+| `/interview` | Configures an AI mock interview. |
+| `/interview/[slug]` | Runs the interview with camera/microphone controls, speech recognition where supported, answer submission, and feedback. Browser camera and microphone permissions are required for those controls. |
+| `/problems` | Generates topic-based practice questions. |
+| `/dsa-sheets` | Lists DSA sheets from different authors; search by author and open a sheet in a new tab. |
+| `/placement-predict` | Submits a student profile to the separate placement prediction service. |
+| `/placement-roadmap` | Displays a placement preparation roadmap. |
+| `/study-planner` | Provides an interactive weekly planner. Its current task state is held in the browser and is not saved to the API. |
+| `/weekness-detection` | Summarizes areas to revisit from the user’s interview feedback. The route currently uses this spelling. |
+| `/dashboard/feedbacks` | Displays saved interview feedback. |
+| `/aboutus` | Explains the platform and its tools. |
+
+## Requirements
+
+- Node.js 20.9 or later
+- npm
+- The SkillSpring API server (see [`../server/README.md`](../server/README.md))
+- The placement prediction service for `/placement-predict`
+
+## Install and run
+
+From the `client` directory:
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). To create an optimized build and run it locally:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Useful project scripts:
 
-## Learn More
+```bash
+npm run lint
+npx tsc --noEmit
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create `client/.env.local` (or use the project’s local `.env` file) and set the service base URLs:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_MODEL_API_URL=http://localhost:8001
+```
 
-## Deploy on Vercel
+`NEXT_PUBLIC_API_URL` is the base URL for the Express server. The frontend appends paths such as `/api/auth/login` and `/api/sheet/all`. The backend defaults to port `8000`; use the port it actually runs on.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`NEXT_PUBLIC_MODEL_API_URL` is the base URL for the separate placement prediction service. The frontend sends prediction requests to `${NEXT_PUBLIC_MODEL_API_URL}/predict`; set this to the host and port of that service.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+These `NEXT_PUBLIC_` values are included in browser code. Use them only for public service URLs; never put credentials or private API keys in them.
+
+## API usage
+
+The app uses Axios for HTTP requests. Login state is supplied by `AuthContext`; authenticated requests use `withCredentials` so the browser sends the server’s HTTP-only cookie. The main API calls are:
+
+- `POST /api/auth/signup`, `POST /api/auth/login`, `GET /api/auth/me`, and `POST /api/auth/logout`
+- `POST /api/user/interview`, `GET /api/user/interview/:sessionId`, and `POST /api/user/interview/:sessionId`
+- `POST /api/user/problems`
+- `GET /api/user/feedbacks/all` and `GET /api/user/feedbacks/:len`
+- `GET /api/sheet/all` for the DSA sheet library
+- Placement prediction calls `POST ${NEXT_PUBLIC_MODEL_API_URL}/predict` on the separate model service
+
+The DSA sheet endpoint returns documents with an `author` and `sheet_link`. The page filters by author and only renders links using the `http:` or `https:` protocols.
+
+## Project structure
+
+```text
+app/                  App Router pages and global styles
+  dsa-sheets/         DSA sheet directory
+  interview/          Interview setup and dynamic session route
+  dashboard/          User dashboard and feedback history
+components/           Shared navigation, footer, and UI components
+AuthContext.tsx        Cookie-backed user session state
+public/                Static assets
+```
+
+## Deployment notes
+
+- Set both service URLs for the deployed environment and configure the API’s `CLIENT_URL` to the exact frontend origin.
+- The API uses credentialed CORS and an HTTP-only authentication cookie. Serve the frontend and API over HTTPS in production and allow credentials for the frontend origin.
+- Browser speech recognition support varies. The typed answer field remains available when speech recognition is unavailable.

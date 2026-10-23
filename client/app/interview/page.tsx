@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 type InterviewType = {
-  domain?: string,
-  interview_level?: string,
+  domain: string,
+  interview_level: string,
   sessionId?: string
 }
 
@@ -41,12 +41,9 @@ const itemVariants = {
 };
 
 const Interview: React.FC = () => {
-  const [sessionId] = useState(() => crypto.randomUUID());
-
   const [interviewForm, setInterviewForm] = useState<InterviewType>({
     domain: "",
     interview_level: "",
-    sessionId: sessionId
   });
   const [loadingPage, setLoading] = useState(false);
 
@@ -58,23 +55,35 @@ const Interview: React.FC = () => {
     if (!user && !loading) {
       router.push("/login");
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
   // CREATE NEW SESSION FOR INTERVIEW
   const createSession = async () => {
+    if (!interviewForm.domain.trim() || !interviewForm.interview_level) {
+      toast.error("Choose a domain and difficulty to start your interview.");
+      return;
+    }
+
     try {
       setLoading(true);
+      const sessionId = crypto.randomUUID();
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/user/interview`,
-        interviewForm,
+        { ...interviewForm, domain: interviewForm.domain.trim(), sessionId },
         { withCredentials: true }
       );
 
       const data = res.data;
-      router.push(`/interview/${sessionId}`);
-      toast.success(data.message);
+      const createdSessionId = data?.data?.sessionId;
+      if (!createdSessionId) {
+        throw new Error("The interview session was created without an ID.");
+      }
+      router.push(`/interview/${encodeURIComponent(createdSessionId)}`);
+      toast.success(data.message || "Your interview is ready.");
     } catch (err) {
       if (isAxiosError(err)) {
-        toast.error(err?.response?.data.message);
+        toast.error(err.response?.data?.message || "Could not start the interview. Please try again.");
+      } else if (err instanceof Error) {
+        toast.error(err.message);
       }
     } finally {
       setLoading(false);
@@ -82,7 +91,7 @@ const Interview: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-16 pb-4 px-4 sm:px-6 flex items-center justify-center">
+    <div className="min-h-screen bg-black pt-20 pb-4 px-4 sm:px-6 flex items-center justify-center">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -193,7 +202,9 @@ const Interview: React.FC = () => {
         <motion.div variants={itemVariants} className="pt-8 border-t border-gray-800 flex justify-end">
           <motion.button
             className="px-4 py-2 rounded-xl font-bold text-lg flex items-center gap-3 transition-all bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.2)] cursor-pointer"
-            onClick={() => createSession()}
+            onClick={createSession}
+            disabled={loadingPage}
+            aria-busy={loadingPage}
           >
             {loadingPage ? "Starting..." : "Start Interview"}
           </motion.button>

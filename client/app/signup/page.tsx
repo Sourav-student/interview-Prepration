@@ -1,134 +1,30 @@
 "use client";
-import axios from 'axios';
-import React, { useState } from 'react';
+import axios from "axios";
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { toast } from "react-hot-toast";
 
-type formDataType = {
-  username: string;
-  name: string;
-  phone_no: string;
-  email: string;
-  password: string;
-};
-
-const Signup = () => {
-  const [formData, setFormData] = useState<formDataType>({
-    username: "",
-    password: "",
-    phone_no: "",
-    name: "",
-    email: ""
-  });
-
-  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevents the page from refreshing
-    try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, formData);
-      alert(res.data.message);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        alert(error.response?.data.message);
-      } else {
-        alert("An unexpected error occurred");
-      }
-    }
+export default function Signup() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({ username: "", name: "", phone_no: "", email: "", password: "" });
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setLoading(true);
+    try { const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, formData); toast.success(res.data.message || "Your account is ready. Sign in to begin!"); router.push("/login"); }
+    catch (error) { toast.error(axios.isAxiosError(error) ? error.response?.data?.message || "We couldn’t create your account. Try again." : "Something went wrong. Try again."); }
+    finally { setLoading(false); }
   };
-
-  return (
-    <div className="min-h-screen flex justify-center items-center bg-linear-to-br from-black via-gray-900 to-gray-800 text-white p-4">
-      {/* Container */}
-      <div className="w-full max-w-lg backdrop-blur-lg p-6 bg-black/40 rounded-2xl border border-gray-700 shadow-2xl max-sm:mt-10">
-        
-        <h2 className="text-2xl font-bold text-center mb-6">
-          Start your Journey with <span className="text-blue-500">PrepTrack</span>
-        </h2>
-
-        <form onSubmit={handleSubmit} className="w-full">
-          
-          {/* 2-Column Grid to reduce height */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* Name Field */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-300" htmlFor="name">Name</label>
-              <input
-                id="name"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-gray-500"
-                type="text"
-                placeholder="Sourav Kumar"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
-            </div>
-
-            {/* Username Field */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-300" htmlFor="username">Username</label>
-              <input
-                id="username"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-gray-500"
-                type="text"
-                placeholder="sourav_123"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                required
-              />
-            </div>
-
-            {/* Email Field */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-300" htmlFor="email">Email</label>
-              <input
-                id="email"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-gray-500"
-                type="email"
-                placeholder="sourav@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
-
-            {/* Phone Number Field */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-300" htmlFor="phone_no">Phone Number</label>
-              <input
-                id="phone_no"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-gray-500"
-                type="tel"
-                placeholder="1234567890"
-                value={formData.phone_no}
-                onChange={(e) => setFormData({ ...formData, phone_no: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Password Field (Spans full width at the bottom) */}
-          <div className="flex flex-col gap-1 mt-4">
-            <label className="text-sm font-medium text-gray-300" htmlFor="password">Password</label>
-            <input
-              id="password"
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder-gray-500"
-              type="password" /* Fixed type to hide text */
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-            />
-          </div>
-
-          {/* Styled Submit Button */}
-          <button 
-            type="submit"
-            className="w-full mt-6 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-2.5 rounded-lg transition-all text-sm shadow-md"
-          >
-            Sign Up
-          </button>
-        </form>
-      </div>
+  const set = (field: keyof typeof formData, value: string) => setFormData((prev) => ({ ...prev, [field]: value }));
+  return <main className="page-shell relative flex items-center justify-center overflow-hidden px-5 py-14 sm:px-8"><div className="pointer-events-none absolute left-[15%] top-[10%] h-72 w-72 rounded-full bg-[#b7f36b]/[.055] blur-[90px]" /><div className="pointer-events-none absolute bottom-[8%] right-[10%] h-80 w-80 rounded-full bg-cyan-300/[.05] blur-[90px]" />
+    <div className="relative grid w-full max-w-5xl overflow-hidden rounded-[30px] border border-white/[.09] bg-[#10161e] shadow-2xl shadow-black/30 md:grid-cols-[.85fr_1.15fr]">
+      <motion.aside initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="relative hidden min-h-[590px] flex-col justify-between overflow-hidden border-r border-white/[.07] bg-[#0d131a] p-10 md:flex"><div className="grid-glow absolute inset-0 opacity-60" /><div className="relative"><span className="grid h-11 w-11 place-items-center rounded-2xl border border-[#b7f36b]/20 bg-[#b7f36b]/[.08] font-black text-[#b7f36b]">P.</span><p className="eyebrow mt-9">Your potential, in motion</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.05em] text-white">Make room for<br />what&apos;s next<span className="text-[#b7f36b]">.</span></h2><p className="mt-4 max-w-xs text-sm leading-6 text-slate-400">A calm, focused space to practice, learn, and feel more like yourself in every interview.</p></div><div className="relative space-y-4">{["Practice with a little more purpose", "See the progress you’re making", "Build confidence at your own pace"].map((line) => <p key={line} className="flex items-center gap-3 text-sm text-slate-400"><span className="grid h-6 w-6 place-items-center rounded-full bg-[#b7f36b]/10 text-[#b7f36b]"><Check size={13} /></span>{line}</p>)}<span className="eyebrow block pt-4">PREPARE WITH PURPOSE · GROW WITH CONFIDENCE</span></div></motion.aside>
+      <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .08 }} className="p-7 sm:p-10 md:p-12"><div className="mb-7"><div className="flex items-center justify-between"><p className="eyebrow">Start your journey</p><span className="flex items-center gap-1.5 rounded-full border border-white/[.08] px-3 py-1.5 text-[10px] font-semibold text-slate-500"><Sparkles size={12} className="text-[#b7f36b]" /> FREE TO START</span></div><h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-white">Let&apos;s get you ready.</h1><p className="mt-2 text-sm text-slate-500">Create your account. Your first step starts here.</p></div>
+        <form onSubmit={handleSubmit} className="space-y-4"><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-300">Your name</label><input id="name" autoComplete="name" className="field" placeholder="Alex Morgan" value={formData.name} onChange={(e) => set("name", e.target.value)} required /></div><div><label htmlFor="username" className="mb-2 block text-sm font-medium text-slate-300">Username</label><input id="username" autoComplete="username" className="field" placeholder="alex_morgan" value={formData.username} onChange={(e) => set("username", e.target.value)} required /></div><div><label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-300">Email</label><input id="email" autoComplete="email" type="email" className="field" placeholder="alex@example.com" value={formData.email} onChange={(e) => set("email", e.target.value)} required /></div><div><label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-300">Phone number</label><input id="phone" autoComplete="tel" type="tel" className="field" placeholder="Your phone number" value={formData.phone_no} onChange={(e) => set("phone_no", e.target.value)} required /></div></div><div><label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-300">Password</label><input id="password" autoComplete="new-password" type="password" minLength={8} className="field" placeholder="At least 8 characters" value={formData.password} onChange={(e) => set("password", e.target.value)} required /></div><button type="submit" disabled={loading} className="primary-button mt-2 w-full disabled:cursor-wait disabled:opacity-60">{loading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> Creating your account…</> : <>Create your account <ArrowRight size={16} /></>}</button></form>
+        <p className="mt-7 text-center text-sm text-slate-500">Already have an account? <Link href="/login" className="font-semibold text-[#b7f36b] hover:text-white">Sign in</Link></p><p className="mt-6 text-center text-xs leading-5 text-slate-600">By continuing, you agree to use SkillSpring to learn, practice, and grow.</p>
+      </motion.section>
     </div>
-  );
-};
-
-export default Signup;
+  </main>;
+}

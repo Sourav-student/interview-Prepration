@@ -1,9 +1,5 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-interface SummaryType extends Document {
-  summary: string,
-  user_id: mongoose.Schema.Types.ObjectId
-}
+import mongoose, { Schema } from "mongoose";
+import { SummaryType } from "../types/models_type.js";
 
 const summarySchema = new Schema<SummaryType>({
   summary: {

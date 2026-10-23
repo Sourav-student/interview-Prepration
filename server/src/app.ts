@@ -6,6 +6,7 @@ import { connDB } from "./utils/connDB.js";
 import userRouter from "./routers/user.routers.js";
 import authRouter from "./routers/auth.routers.js";
 import { rateLimit } from "express-rate-limit";
+import { sheetRouter } from "./routers/sheet.routers.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use(cookieParser());
 
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/sheet", sheetRouter);
 
 app.get("/api/health", (req, res) => {
   return res.send("server is working...");
