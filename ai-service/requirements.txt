@@ -1,4 +1,6 @@
+dotenv
 fastapi
 uvicorn
 scikit-learn
 joblib
+langchain

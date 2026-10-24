@@ -10,8 +10,7 @@ import { updateUserStreak } from "../services/streak.services.js";
 import { buildInterviewPrompt } from "../utils/promptBuilder.js";
 import { getError } from "../utils/getError.js";
 import { getSuccess } from "../utils/getSuccess.js";
-import { IHistory, IInterviewSession } from "../types/models_type.js";
-import { connGroq } from "../utils/connGroq.js";
+import { IHistory } from "../types/models_type.js";
 import InterviewSession from "../models/interviewSession.models.js";
 
 export async function createInterviewSession(req: Request, res: Response) {
@@ -93,7 +92,7 @@ ${question}
 
 Answer:
 ${answer}`;
-    const parsed = await connGroq(prompt);
+    const parsed = await connGemini(prompt);
 
     session.history.push({
       question,
@@ -179,7 +178,7 @@ export async function getInterviewQuestion(req: Request, res: Response) {
       history
     });
 
-    const parsed = await connGroq(prompt);
+    const parsed = await connGemini(prompt);
     return res.status(201).json({
       message: "Success",
       question: parsed,
@@ -190,7 +189,6 @@ export async function getInterviewQuestion(req: Request, res: Response) {
     return getError(res, "something went wrong", 500);
   }
 }
-
 
 export async function getFeedbacks(req: Request, res: Response) {
   try {

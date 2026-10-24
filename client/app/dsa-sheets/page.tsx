@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, BookOpen, ExternalLink, FileQuestion, Library, LoaderCircle, Search, Sparkles } from "lucide-react";
+import { ArrowUpRight, BookOpen, ExternalLink, FileQuestion, Library, Search, Sparkles } from "lucide-react";
 
 type DsaSheet = {
   _id: string;
@@ -36,6 +36,7 @@ export default function DsaSheetsPage() {
       try {
         const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/sheet/all`, {
           signal: controller.signal,
+          withCredentials : true
         });
         setSheets(Array.isArray(data?.data) ? data.data : []);
       } catch (loadError) {
@@ -75,7 +76,7 @@ export default function DsaSheetsPage() {
               <h1 className="mt-3 text-4xl font-semibold tracking-[-.05em] text-white sm:text-5xl">Find your next <span className="text-gradient">problem set.</span></h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">Explore DSA sheets shared by different authors. Pick a roadmap that fits your style and keep building interview-ready problem-solving skills.</p>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-white/[.07] bg-white/[.025] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/[.07] bg-white/2.5 px-4 py-3">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#b7f36b]/10 text-[#b7f36b]"><BookOpen size={17} /></span>
               <div><p className="text-lg font-semibold leading-none text-white">{loading ? "—" : sheets.length}</p><p className="mt-1 text-[10px] font-semibold tracking-wider text-slate-500">AVAILABLE SHEETS</p></div>
             </div>
@@ -91,10 +92,10 @@ export default function DsaSheetsPage() {
 
         {loading ? (
           <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading DSA sheets">
-            {[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="surface h-52 animate-pulse rounded-[24px]" />)}
+            {[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className="surface h-52 animate-pulse rounded-3xl" />)}
           </div>
         ) : error ? (
-          <div className="surface mt-7 rounded-[24px] p-8 text-center">
+          <div className="surface mt-7 rounded-3xl p-8 text-center">
             <FileQuestion size={25} className="mx-auto text-rose-200" />
             <p className="mt-3 text-sm text-slate-300">{error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 text-sm font-semibold text-[#b7f36b] hover:text-white">Try again</button>

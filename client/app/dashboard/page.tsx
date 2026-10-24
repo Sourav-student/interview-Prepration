@@ -30,7 +30,7 @@ const Dashboard: React.FC = () => {
      {name: "Planner", href: "/study-planner"} ,
      {name: "Roadmap", href: "/placement-roadmap"},
      {name: "Weakness insights", href: "/weekness-detection"},
-     {name: "Problems", href: "/problems"},
+     {name: "Problems", href: "/practices"},
      {name: "DSA sheets", href: "/dsa-sheets"},
   ]);
 

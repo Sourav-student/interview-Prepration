@@ -7,7 +7,7 @@ import { useAuth } from "@/AuthContext";
 
 const tools = [
   { icon: AudioLines, number: "01", title: "Mock interviews", detail: "Build confidence through realistic, AI-led conversations tailored to your role.", href: "/interview", label: "Practice out loud", tint: "from-violet-400/20 to-fuchsia-400/5" },
-  { icon: Code2, number: "02", title: "Practice problems", detail: "Turn the topics you struggle with into focused, bite-sized practice.", href: "/problems", label: "Find your edge", tint: "from-cyan-400/20 to-blue-400/5" },
+  { icon: Code2, number: "02", title: "Practice problems", detail: "Turn the topics you struggle with into focused, bite-sized practice.", href: "/practices", label: "Find your edge", tint: "from-cyan-400/20 to-blue-400/5" },
   { icon: Library, number: "03", title: "DSA sheet library", detail: "Explore structured problem lists from different authors and find a plan that fits you.", href: "/dsa-sheets", label: "Browse the library", tint: "from-cyan-400/20 to-indigo-400/5" },
   { icon: Target, number: "04", title: "Placement outlook", detail: "See how your current profile maps to placement readiness and what to improve.", href: "/placement-predict", label: "Know your position", tint: "from-[#b7f36b]/20 to-emerald-400/5" },
 ];

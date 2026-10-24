@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { name: "Overview", href: "/" },
   { name: "Dashboard", href: "/dashboard" },
   { name: "Mock interview", href: "/interview" },
-  { name: "Practice", href: "/problems" },
+  { name: "Practice", href: "/practices" },
   { name: "DSA sheets", href: "/dsa-sheets" },
   { name: "Placement AI", href: "/placement-predict" },
 ];

@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import joblib
-import os
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+load_dotenv()
 
 # Frontend URLs
 origins = [
