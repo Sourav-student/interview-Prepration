@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
           className="h-8 w-32 bg-gray-800 rounded-md mb-8"
         />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full max-w-7xl">
-          {Array(4).map((_, i) => (
+          {Array.from({ length: 4 }, (_, i) => (
             <motion.div
               key={i}
               animate={{ opacity: [0.4, 1, 0.4] }}

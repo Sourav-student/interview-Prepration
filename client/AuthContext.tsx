@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 type User = {
   id: string;
@@ -16,7 +17,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   setUser: (user: User | null) => void;
-  logout: () => Promise<void>;
+  logout: () => Promise<boolean>;
   getUser: () => Promise<void>;
 };
 
@@ -30,14 +31,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
-        { 
-          withCredentials: true , 
-          headers: { 'Cache-Control': 'no-cache' }
+        {
+          timeout: 10000,
+          withCredentials: true,
+          headers: { "Cache-Control": "no-cache" }
         }
       );
       setUser(res.data.user);
-    } catch {
+    } catch (error) {
       setUser(null);
+      if (axios.isAxiosError(error) && ![401, 403].includes(error.response?.status ?? 0)) {
+        toast.error("We couldn’t verify your session. Check your connection and refresh.");
+      }
     } finally {
       setLoading(false);
     }
@@ -49,20 +54,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Logout
-  const logout = async () => {
+  const logout = async (): Promise<boolean> => {
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
         {},
-        { withCredentials: true}
+        { timeout: 10000, withCredentials: true }
       );
 
-      await getUser();
       setUser(null);
       localStorage.removeItem("user_info");
-
+      return true;
     } catch (error) {
       console.error("Logout failed", error);
+      toast.error("We couldn’t sign you out. Please try again.");
+      return false;
     }
   };
 

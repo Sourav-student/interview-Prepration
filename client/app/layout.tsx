@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import { AuthProvider } from "@/AuthContext";
 import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
+import { MotionConfig } from "framer-motion";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
     title: "SkillSpring | Learn, practice, and grow",
@@ -21,15 +23,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
       {/* Browser extensions may add attributes to <body> before hydration. */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <AuthProvider>
-          <Header />
-          {children}
-          <Footer />
-          <Toaster/>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <MotionConfig reducedMotion="user">
+              <Header />
+              {children}
+              <Footer />
+              <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+            </MotionConfig>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

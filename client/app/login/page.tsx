@@ -17,7 +17,7 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, formData, { withCredentials: true });
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, formData, { timeout: 10000, withCredentials: true });
       await getUser(); toast.success(res.data.message || "Welcome back!"); router.push("/dashboard");
     } catch (error) { toast.error(axios.isAxiosError(error) ? error.response?.data?.message || "We couldn’t sign you in. Try again." : "Something went wrong. Try again."); }
     finally { setLoading(false); }

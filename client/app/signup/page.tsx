@@ -13,7 +13,7 @@ export default function Signup() {
   const [formData, setFormData] = useState({ username: "", name: "", phone_no: "", email: "", password: "" });
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); setLoading(true);
-    try { const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, formData); toast.success(res.data.message || "Your account is ready. Sign in to begin!"); router.push("/login"); }
+    try { const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, formData, { timeout: 10000 }); toast.success(res.data.message || "Your account is ready. Sign in to begin!"); router.push("/login"); }
     catch (error) { toast.error(axios.isAxiosError(error) ? error.response?.data?.message || "We couldn’t create your account. Try again." : "Something went wrong. Try again."); }
     finally { setLoading(false); }
   };

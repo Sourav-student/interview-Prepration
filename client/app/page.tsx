@@ -15,9 +15,9 @@ const tools = [
 const rise = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: .65, ease: "easeOut" as const } } };
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   return <main className="overflow-hidden">
-    <section className="relative mx-auto flex min-h-[700px] max-w-7xl items-center px-5 pb-16 pt-28 sm:px-8 lg:min-h-[780px]">
+    <section className="relative mx-auto flex min-h-[calc(100svh-72px)] max-w-7xl items-center px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
       <div className="grid-glow pointer-events-none absolute inset-x-0 top-0 h-[650px] opacity-40" />
       <div className="pointer-events-none absolute left-[55%] top-[10%] h-[540px] w-[540px] rounded-full bg-[#a6e95f]/[.045] blur-[100px]" />
       <div className="relative z-10 grid w-full items-center gap-16 lg:grid-cols-[1.05fr_.95fr]">
@@ -26,7 +26,7 @@ export default function Home() {
           <motion.h1 variants={rise} className="text-[3.35rem] font-semibold leading-[.99] tracking-[-.065em] text-white sm:text-7xl lg:text-[5.7rem]">Build your skills.<br /><span className="text-gradient">Find your next step.</span></motion.h1>
           <motion.p variants={rise} className="mt-7 max-w-[510px] text-base leading-7 text-slate-400 sm:text-lg sm:leading-8">One place to learn, practice, and plan what comes next. Explore focused problem sets, AI-powered interview practice, and tools to help you keep growing.</motion.p>
           <motion.div variants={rise} className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href={user ? "/dashboard" : "/signup"} className="primary-button group">{user ? "Go to your dashboard" : "Get started free"}<ArrowRight size={16} className="transition-transform group-hover:translate-x-1" /></Link>
+            {loading ? <span role="status" className="primary-button cursor-wait opacity-75"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Checking your space…</span> : <Link href={user ? "/dashboard" : "/signup"} className="primary-button group">{user ? "Go to your dashboard" : "Get started free"}<ArrowRight size={16} className="transition-transform group-hover:translate-x-1" /></Link>}
             <Link href="#tools" className="secondary-button"><CirclePlay size={17} /> Explore the platform</Link>
           </motion.div>
           <motion.div variants={rise} className="mt-10 flex items-center gap-4 text-xs text-slate-500"><div className="flex -space-x-2"><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#090d13] bg-violet-300/20 text-violet-200">S</span><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#090d13] bg-cyan-300/20 text-cyan-200">D</span><span className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#090d13] bg-orange-300/20 text-orange-200">A</span></div><span><strong className="font-semibold text-slate-300">A little practice goes a long way.</strong><br />Your future self is already cheering.</span></motion.div>
@@ -69,6 +69,6 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="px-5 py-20 sm:px-8 sm:py-28"><motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative mx-auto max-w-7xl overflow-hidden rounded-[30px] border border-white/[.08] bg-[#111922] px-7 py-14 text-center sm:px-14 sm:py-20"><div className="pointer-events-none absolute left-1/2 top-0 h-56 w-[600px] -translate-x-1/2 rounded-full bg-[#b7f36b]/[.08] blur-[90px]" /><div className="relative"><span className="eyebrow">Your pace. Your potential.</span><h2 className="mx-auto mt-5 max-w-2xl text-4xl font-semibold tracking-[-.045em] text-white sm:text-5xl">The opportunity is yours.<br /><span className="text-gradient">Let&apos;s get you ready.</span></h2><p className="mx-auto mt-5 max-w-lg text-sm leading-6 text-slate-400">Your next interview can feel different. Take the first step and build the confidence that stays with you.</p><Link href={user ? "/dashboard" : "/signup"} className="primary-button mt-8">{user ? "Continue your prep" : "Create your free account"}<ArrowRight size={16} /></Link></div></motion.div></section>
+    <section className="px-5 py-20 sm:px-8 sm:py-28"><motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative mx-auto max-w-7xl overflow-hidden rounded-[30px] border border-white/[.08] bg-[#111922] px-7 py-14 text-center sm:px-14 sm:py-20"><div className="pointer-events-none absolute left-1/2 top-0 h-56 w-[600px] -translate-x-1/2 rounded-full bg-[#b7f36b]/[.08] blur-[90px]" /><div className="relative"><span className="eyebrow">Your pace. Your potential.</span><h2 className="mx-auto mt-5 max-w-2xl text-4xl font-semibold tracking-[-.045em] text-white sm:text-5xl">The opportunity is yours.<br /><span className="text-gradient">Let&apos;s get you ready.</span></h2><p className="mx-auto mt-5 max-w-lg text-sm leading-6 text-slate-400">Your next interview can feel different. Take the first step and build the confidence that stays with you.</p>{loading ? <span role="status" className="primary-button mt-8 cursor-wait opacity-75"><span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />Checking your space…</span> : <Link href={user ? "/dashboard" : "/signup"} className="primary-button mt-8">{user ? "Continue your prep" : "Create your free account"}<ArrowRight size={16} /></Link>}</div></motion.div></section>
   </main>;
 }
