@@ -58,3 +58,10 @@ export interface SheetType extends Document{
   sheet_link : string,
 }
 
+export interface ProblemType extends Document{
+  problem_title : string,
+  problem_desc : string,
+  problem_level : string,
+  problem_link : string,
+  problem_platform_name : string
+}

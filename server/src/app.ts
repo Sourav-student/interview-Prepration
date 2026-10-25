@@ -7,6 +7,7 @@ import userRouter from "./routers/user.routers.js";
 import authRouter from "./routers/auth.routers.js";
 import { rateLimit } from "express-rate-limit";
 import { sheetRouter } from "./routers/sheet.routers.js";
+import { problemRouter } from "./routers/problem.routers.js";
 
 dotenv.config();
 
@@ -23,7 +24,6 @@ if (process.env.NODE_ENV === "production") {
   app.use(limiter);
 }
 
-
 app.use(cors({
   origin: process.env.CLIENT_URL,
   methods: ["POST", "GET", "DELETE", "PATCH", "PUT"],
@@ -37,6 +37,7 @@ app.use(cookieParser());
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/sheet", sheetRouter);
+app.use("/api/problem", problemRouter);
 
 app.get("/api/health", (req, res) => {
   return res.send("server is working...");
@@ -53,7 +54,7 @@ async function startServer() {
     await connDB();
 
     const server = app.listen(PORT, () => {
-      console.log(`App running at port ${PORT}`);
+      console.log(`App running at : http://localhost:${PORT}`);
     });
 
     process.on("SIGINT", () => {

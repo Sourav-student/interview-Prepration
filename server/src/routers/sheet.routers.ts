@@ -4,5 +4,5 @@ import { Authenticated, Authorization } from "../middlewares/auth.middlewares.js
 
 export const sheetRouter = Router();
 
-sheetRouter.post("/", Authenticated, Authorization, createSheet);
+sheetRouter.post("/admin/add", Authenticated, Authorization, createSheet);
 sheetRouter.get('/all', Authenticated, getAllSheets);

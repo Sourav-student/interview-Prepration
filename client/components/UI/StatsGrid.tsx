@@ -54,7 +54,7 @@ export default function StatsGrid(user: UserStats) {
             Consistency looks good on you.
           </h2>
         </div>
-        <Link href="/dashboard/feedbacks" className="secondary-button !rounded-xl !px-4 !py-2.5 text-sm">
+        <Link href="/dashboard/feedbacks" className="secondary-button rounded-xl! px-4! py-2.5! text-sm">
           View interview feedback <ArrowRight size={15} />
         </Link>
       </div>
