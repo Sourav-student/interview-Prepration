@@ -28,8 +28,12 @@ function getThemeSnapshot(): Theme {
   }
 }
 
+function getServerThemeSnapshot(): Theme {
+  return "dark";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useSyncExternalStore(subscribeToThemeChanges, getThemeSnapshot, () => "dark");
+  const theme = useSyncExternalStore(subscribeToThemeChanges, getThemeSnapshot, getServerThemeSnapshot);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
